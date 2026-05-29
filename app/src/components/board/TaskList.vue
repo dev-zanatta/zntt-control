@@ -1,66 +1,53 @@
 <template>
-  <div ref="listEl" class="zc-col-body">
+  <VueDraggable
+    v-model="localTasks"
+    class="zc-col-body"
+    :group="{ name: 'kanban-tasks', pull: true, put: true }"
+    handle=".zc-tcard-grip"
+    ghost-class="tcard-ghost"
+    :animation="150"
+    :data-col-id="colId"
+    @update="onSortEnd"
+    @add="onItemAdded"
+  >
     <TaskCard
-      v-for="task in tasks"
+      v-for="task in localTasks"
       :key="task.id"
       :task="task"
       :data-task-id="task.id"
       @click="$emit('task-click', task)"
     />
-  </div>
+  </VueDraggable>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
-import Sortable from 'sortablejs'
+import { computed } from 'vue'
+import { VueDraggable } from 'vue-draggable-plus'
 import TaskCard from './TaskCard.vue'
 
 const props = defineProps({
-  tasks:  { type: Array,  required: true },
-  colId:  { type: Number, required: true },
+  tasks: { type: Array,  required: true },
+  colId: { type: Number, required: true },
 })
 
-const emit = defineEmits(['task-click', 'reorder', 'moved'])
+const emit = defineEmits(['task-click', 'update:tasks', 'reorder', 'moved'])
 
-const listEl = ref(null)
-let sortable = null
+const localTasks = computed({
+  get: () => props.tasks,
+  set: (val) => emit('update:tasks', val),
+})
 
-function init() {
-  if (!listEl.value) return
-  sortable?.destroy()
-
-  sortable = Sortable.create(listEl.value, {
-    group:      'kanban-tasks',
-    handle:     '.zc-tcard-grip',
-    ghostClass: 'tcard-ghost',
-    animation:  150,
-    dataIdAttr: 'data-task-id',
-
-    onUpdate(evt) {
-      emit('reorder', {
-        colId:    props.colId,
-        oldIndex: evt.oldIndex,
-        newIndex: evt.newIndex,
-      })
-    },
-
-    onAdd(evt) {
-      const taskId = parseInt(evt.item.getAttribute('data-task-id'))
-      const fromColId = parseInt(evt.from.getAttribute('data-col-id'))
-      const newIndex  = evt.newIndex
-
-      evt.item.parentNode?.removeChild(evt.item)
-
-      emit('moved', { taskId, fromColId, toColId: props.colId, newIndex })
-    },
+function onSortEnd(evt) {
+  emit('reorder', {
+    colId:    props.colId,
+    oldIndex: evt.oldIndex,
+    newIndex: evt.newIndex,
   })
-
-  listEl.value.setAttribute('data-col-id', props.colId)
 }
 
-onMounted(init)
-
-watch(() => props.colId, init)
-
-onBeforeUnmount(() => sortable?.destroy())
+function onItemAdded(evt) {
+  const taskId    = parseInt(evt.item.getAttribute('data-task-id'))
+  const fromColId = parseInt(evt.from.getAttribute('data-col-id'))
+  emit('moved', { taskId, fromColId, toColId: props.colId, newIndex: evt.newIndex })
+}
 </script>

@@ -85,7 +85,7 @@
           </div>
 
           <TaskList
-            :tasks="col.tasks"
+            v-model:tasks="col.tasks"
             :col-id="col.id"
             @task-click="openTaskById"
             @reorder="onDragReorder"
@@ -270,23 +270,19 @@ async function doCreateTask(col) {
   nextTick(() => addTaskInputs[col.id]?.focus())
 }
 
-function onDragReorder({ colId, oldIndex, newIndex }) {
+function onDragReorder({ colId, newIndex }) {
   const col = columns.value.find((c) => c.id === colId)
   if (!col) return
-  const [task] = col.tasks.splice(oldIndex, 1)
-  col.tasks.splice(newIndex, 0, task)
-  moveTask(task.id, { newColumnId: colId, newPosition: newIndex })
+  const task = col.tasks[newIndex]
+  if (task) moveTask(task.id, { newColumnId: colId, newPosition: newIndex })
 }
 
 function onDragMoved({ taskId, fromColId, toColId, newIndex }) {
-  const fromCol = columns.value.find((c) => c.id === fromColId)
-  const toCol   = columns.value.find((c) => c.id === toColId)
-  if (!fromCol || !toCol) return
-  const idx = fromCol.tasks.findIndex((t) => t.id === taskId)
-  if (idx === -1) return
-  const [task] = fromCol.tasks.splice(idx, 1)
+  const toCol = columns.value.find((c) => c.id === toColId)
+  if (!toCol) return
+  const task = toCol.tasks[newIndex]
+  if (!task) return
   task.column_id = toColId
-  toCol.tasks.splice(newIndex, 0, task)
   if (selectedTask.value?.id === taskId) {
     selectedTask.value = { ...selectedTask.value, column_id: toColId }
   }
