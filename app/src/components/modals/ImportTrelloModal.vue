@@ -2,7 +2,6 @@
   <div class="zc-modal-overlay zc-fade" @click="$emit('close')">
     <div class="zc-modal import-modal" @click.stop>
 
-      <!-- ── Header ──────────────────────────────────────────────────────── -->
       <div class="zc-modal-hd">
         <div style="display:flex;align-items:center;gap:9px;">
           <ZIcon name="download" :size="15" style="color:var(--zc-accent);" />
@@ -13,7 +12,6 @@
         </button>
       </div>
 
-      <!-- ── Step indicator ─────────────────────────────────────────────── -->
       <div class="import-steps">
         <span :class="['import-step', step >= 1 ? 'active' : '', step > 1 ? 'done' : '']">
           <span class="import-step-dot">{{ step > 1 ? '✓' : '1' }}</span> Select file
@@ -28,50 +26,33 @@
         </span>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════════
-           STEP 1 — Select JSON file
-      ════════════════════════════════════════════════════════════════════ -->
       <div v-if="step === 1" class="zc-modal-body import-body">
         <p class="import-intro">
           Select the <strong>.json</strong> file exported from your Trello board.<br>
           In Trello: <span class="import-mono">Board → Show menu → More → Print and export → Export as JSON</span>
         </p>
-
-        <!-- Drop zone / file button -->
-        <div :class="['import-dropzone', filePath ? 'selected' : '']" @click="selectFile">
+        <div :class="['import-dropzone', filePath ? 'selected' : '']" @click="doSelectFile">
           <ZIcon :name="filePath ? 'checklist' : 'folder'" :size="26" :stroke="1.3"
                  :style="{ color: filePath ? 'var(--zc-success)' : 'var(--zc-text-faint)' }" />
           <div v-if="filePath" class="import-file-name">{{ fileBasename }}</div>
           <div v-else class="import-dz-label">Click to choose .json file</div>
         </div>
-
         <div v-if="parseError" class="import-error">
           <ZIcon name="x" :size="12" /> {{ parseError }}
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════════
-           STEP 2 — Configure import
-      ════════════════════════════════════════════════════════════════════ -->
       <div v-else-if="step === 2" class="zc-modal-body import-body">
-
-        <!-- Board preview card -->
         <div class="import-preview-box">
           <div class="import-preview-title">
             <ZIcon name="grid" :size="13" style="color:var(--zc-accent);" />
             {{ preview.boardName }}
           </div>
           <div class="import-preview-stats">
-            <span class="import-stat">
-              <strong>{{ preview.lists.length }}</strong> columns
-            </span>
+            <span class="import-stat"><strong>{{ preview.lists.length }}</strong> columns</span>
             <span class="import-stat-sep">·</span>
-            <span class="import-stat">
-              <strong>{{ preview.totalCards }}</strong> tasks
-            </span>
+            <span class="import-stat"><strong>{{ preview.totalCards }}</strong> tasks</span>
           </div>
-
-          <!-- Column breakdown -->
           <div class="import-col-list">
             <div v-for="list in preview.lists" :key="list.id" class="import-col-row">
               <span class="import-col-dot" :style="{ background: list.isDone ? 'var(--zc-teal)' : 'var(--zc-accent)' }" />
@@ -80,45 +61,28 @@
               <span class="import-col-count">{{ list.cardCount }} tasks</span>
             </div>
           </div>
-
-          <!-- Skipped lists notice -->
           <div v-if="preview.skippedLists.length" class="import-warn">
             <ZIcon name="x" :size="11" />
-            {{ preview.skippedLists.length }} archived list{{ preview.skippedLists.length > 1 ? 's' : '' }}
-            skipped:
+            {{ preview.skippedLists.length }} archived list{{ preview.skippedLists.length > 1 ? 's' : '' }} skipped:
             <span v-for="(n, i) in preview.skippedLists" :key="i" class="import-mono">
               {{ n }}<span v-if="i < preview.skippedLists.length - 1">, </span>
             </span>
           </div>
         </div>
 
-        <!-- ── Destination ─────────────────────────────────────────────── -->
         <div class="import-section-h">Destination</div>
-
         <div class="import-dest-tabs">
-          <button
-            :class="['import-dest-tab', destMode === 'new' ? 'active' : '']"
-            @click="destMode = 'new'"
-          >
+          <button :class="['import-dest-tab', destMode === 'new' ? 'active' : '']" @click="destMode = 'new'">
             <ZIcon name="plus" :size="12" /> New project
           </button>
-          <button
-            :class="['import-dest-tab', destMode === 'existing' ? 'active' : '']"
-            @click="destMode = 'existing'"
-          >
+          <button :class="['import-dest-tab', destMode === 'existing' ? 'active' : '']" @click="destMode = 'existing'">
             <ZIcon name="folder" :size="12" /> Existing project
           </button>
         </div>
 
-        <!-- New project form -->
         <div v-if="destMode === 'new'" class="import-dest-form">
           <label class="zc-label">Project name</label>
-          <input
-            ref="nameInputRef"
-            class="zc-input"
-            v-model="newName"
-            placeholder="Project name…"
-          />
+          <input ref="nameInputRef" class="zc-input" v-model="newName" placeholder="Project name…" />
           <label class="zc-label" style="margin-top:12px;">Color</label>
           <div class="zc-color-swatches">
             <button
@@ -132,7 +96,6 @@
           </div>
         </div>
 
-        <!-- Existing project selector -->
         <div v-else class="import-dest-form">
           <label class="zc-label">Project</label>
           <div v-if="projects.length === 0" class="import-no-projects">
@@ -162,18 +125,13 @@
         </div>
       </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════════
-           STEP 3 — Result
-      ════════════════════════════════════════════════════════════════════ -->
       <div v-else-if="step === 3" class="zc-modal-body import-body import-result">
         <div v-if="importing" class="import-loading">
           <div class="import-spinner" />
           <span>Importing…</span>
         </div>
         <div v-else-if="result" class="import-success">
-          <div class="import-success-icon">
-            <ZIcon name="check" :size="28" :stroke="2" />
-          </div>
+          <div class="import-success-icon"><ZIcon name="check" :size="28" :stroke="2" /></div>
           <div class="import-success-title">Import complete!</div>
           <div class="import-success-stats">
             <span><strong>{{ result.tasksImported }}</strong> tasks</span>
@@ -183,41 +141,23 @@
         </div>
       </div>
 
-      <!-- ── Footer ──────────────────────────────────────────────────────── -->
       <div class="zc-modal-ft">
-        <!-- Step 1 -->
         <template v-if="step === 1">
           <button class="zc-btn ghost" @click="$emit('close')">Cancel</button>
-          <button
-            class="zc-btn primary"
-            :disabled="!filePath || parsing"
-            @click="goToStep2"
-          >
+          <button class="zc-btn primary" :disabled="!filePath || parsing" @click="goToStep2">
             <span v-if="parsing">Reading…</span>
             <template v-else>Next <ZIcon name="arrowRight" :size="13" /></template>
           </button>
         </template>
-
-        <!-- Step 2 -->
         <template v-else-if="step === 2">
           <button class="zc-btn ghost" @click="step = 1">Back</button>
-          <button
-            class="zc-btn primary"
-            :disabled="!canImport || importing"
-            @click="runImport"
-          >
+          <button class="zc-btn primary" :disabled="!canImport || importing" @click="doRunImport">
             Import <ZIcon name="arrowRight" :size="13" />
           </button>
         </template>
-
-        <!-- Step 3 -->
         <template v-else-if="step === 3">
           <button v-if="!importing" class="zc-btn ghost" @click="$emit('close')">Close</button>
-          <button
-            v-if="result && !importing"
-            class="zc-btn primary"
-            @click="goToProject"
-          >
+          <button v-if="result && !importing" class="zc-btn primary" @click="goToProject">
             Open project <ZIcon name="arrowRight" :size="13" />
           </button>
         </template>
@@ -231,459 +171,189 @@
 import { ref, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import ZIcon from 'src/components/common/ZIcon.vue'
-import { useIpc } from 'src/composables/useIpc'
+import { useImport }  from 'src/domains/import/useImport'
+import { useProject } from 'src/domains/project/useProject'
+import { PROJECT_COLORS } from 'src/domains/project/project.entity'
 
 const emit   = defineEmits(['close', 'imported'])
 const router = useRouter()
-const ipc    = useIpc()
 
-const PROJECT_COLORS = [
-  '#7c6af7', '#3ecfcf', '#e0a050', '#4caf82',
-  '#e05c5c', '#9b7af7', '#7c9af7', '#e6b070',
-]
+const {
+  filePath, fileBasename, parsing, parseError,
+  preview, importing, importError, result,
+  selectFile, parseFile, runImport,
+} = useImport()
 
-// ── state ──────────────────────────────────────────────────────────────────
-const step      = ref(1)
-const filePath  = ref(null)
-const parsing   = ref(false)
-const parseError = ref('')
-const preview   = ref(null)
+const { projects, fetchProjects } = useProject()
 
-const destMode          = ref('new')
-const newName           = ref('')
-const newColor          = ref(PROJECT_COLORS[0])
+const step            = ref(1)
+const destMode        = ref('new')
+const newName         = ref('')
+const newColor        = ref(PROJECT_COLORS[0])
 const selectedProjectId = ref(null)
-const projects          = ref([])
-
-const importing    = ref(false)
-const importError  = ref('')
-const result       = ref(null)
-
-const nameInputRef = ref(null)
-
-// ── computed ───────────────────────────────────────────────────────────────
-const fileBasename = computed(() => {
-  if (!filePath.value) return ''
-  return filePath.value.replace(/\\/g, '/').split('/').pop()
-})
+const nameInputRef    = ref(null)
 
 const canImport = computed(() => {
   if (destMode.value === 'new') return newName.value.trim().length > 0
   return selectedProjectId.value !== null
 })
 
-// ── step 1 — file selection ────────────────────────────────────────────────
-async function selectFile() {
-  parseError.value = ''
-  const path = await ipc.trelloSelectFile()
-  if (!path) return
-  filePath.value = path
+async function doSelectFile() {
+  await selectFile()
 }
 
 async function goToStep2() {
   if (!filePath.value) return
-  parsing.value   = true
-  parseError.value = ''
-  try {
-    preview.value = await ipc.trelloParse(filePath.value)
-    // Pre-fill new project name with board name
-    newName.value = preview.value.boardName
+  const parsed = await parseFile()
+  if (!parsed) return
 
-    // Load existing projects for the "existing" tab
-    projects.value = await ipc.getProjects()
+  newName.value = parsed.boardName
+  await fetchProjects()
 
-    step.value = 2
-    await nextTick()
-    nameInputRef.value?.focus()
-  } catch (e) {
-    parseError.value = e?.message || 'Erro ao ler o arquivo. Verifique se é um export válido do Trello.'
-  } finally {
-    parsing.value = false
-  }
+  step.value = 2
+  await nextTick()
+  nameInputRef.value?.focus()
 }
 
-// ── step 2 → step 3 — import ───────────────────────────────────────────────
-async function runImport() {
+async function doRunImport() {
   if (!canImport.value) return
-  importing.value   = true
-  importError.value = ''
-  step.value        = 3
+  step.value = 3
+
+  const params = { filePath: filePath.value, mode: destMode.value }
+  if (destMode.value === 'new') {
+    params.newProjectName  = newName.value.trim()
+    params.newProjectColor = newColor.value
+  } else {
+    params.existingProjectId = selectedProjectId.value
+  }
 
   try {
-    const params = {
-      filePath: filePath.value,
-      mode:     destMode.value,
-    }
-    if (destMode.value === 'new') {
-      params.newProjectName  = newName.value.trim()
-      params.newProjectColor = newColor.value
-    } else {
-      params.existingProjectId = selectedProjectId.value
-    }
-
-    result.value = await ipc.trelloImport(params)
-  } catch (e) {
-    // Roll back to step 2 with error
-    step.value        = 2
-    importError.value = e?.message || 'Erro durante a importação. Tente novamente.'
-  } finally {
-    importing.value = false
+    await runImport(params)
+  } catch (_) {
+    step.value = 2
   }
 }
 
 function goToProject() {
   if (!result.value?.projectId) return
-  emit('imported', result.value.projectId) // tells dashboard to refresh project list
+  emit('imported', result.value.projectId)
   emit('close')
   router.push(`/project/${result.value.projectId}`)
 }
 </script>
 
 <style scoped>
-/* ── Modal sizing ─────────────────────────────────────────────────────────── */
-.import-modal {
-  width: 520px;
-  max-width: 95vw;
-}
+.import-modal { width: 520px; max-width: 95vw; }
 
-/* ── Step indicator ───────────────────────────────────────────────────────── */
 .import-steps {
-  display: flex;
-  align-items: center;
-  gap: 0;
-  padding: 10px 22px 0;
+  display: flex; align-items: center; gap: 0;
+  padding: 10px 22px 12px;
   border-bottom: 1px solid var(--zc-border);
-  padding-bottom: 12px;
-  margin-bottom: 0;
 }
 .import-step {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11.5px;
-  color: var(--zc-text-faint);
-  font-family: var(--zc-mono);
-  letter-spacing: .03em;
-  transition: color .15s;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11.5px; color: var(--zc-text-faint);
+  font-family: var(--zc-mono); letter-spacing: .03em; transition: color .15s;
 }
 .import-step.active { color: var(--zc-text); }
 .import-step.done   { color: var(--zc-success); }
 .import-step-dot {
-  width: 20px; height: 20px;
-  border-radius: 50%;
-  background: var(--zc-surface-2);
-  border: 1px solid var(--zc-border-strong);
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--zc-surface-2); border: 1px solid var(--zc-border-strong);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
-  flex-shrink: 0;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
   transition: background .15s, border-color .15s;
 }
-.import-step.active .import-step-dot {
-  background: var(--zc-accent);
-  border-color: var(--zc-accent);
-  color: #fff;
-}
-.import-step.done .import-step-dot {
-  background: var(--zc-success);
-  border-color: var(--zc-success);
-  color: #fff;
-  font-size: 11px;
-}
-.import-step-line {
-  flex: 1;
-  height: 1px;
-  background: var(--zc-border);
-  margin: 0 8px;
-  max-width: 36px;
-}
+.import-step.active .import-step-dot { background: var(--zc-accent); border-color: var(--zc-accent); color: #fff; }
+.import-step.done   .import-step-dot { background: var(--zc-success); border-color: var(--zc-success); color: #fff; font-size: 11px; }
+.import-step-line   { flex: 1; height: 1px; background: var(--zc-border); margin: 0 8px; max-width: 36px; }
 
-/* ── Body ─────────────────────────────────────────────────────────────────── */
 .import-body {
-  padding: 18px 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-height: 420px;
-  overflow-y: auto;
+  padding: 18px 22px; display: flex; flex-direction: column; gap: 14px;
+  max-height: 420px; overflow-y: auto;
 }
 
-/* ── Step 1 ───────────────────────────────────────────────────────────────── */
-.import-intro {
-  font-size: 12.5px;
-  color: var(--zc-text-dim);
-  line-height: 1.6;
-  margin: 0;
-}
-.import-mono {
-  font-family: var(--zc-mono);
-  font-size: 10.5px;
-  color: var(--zc-text-faint);
-  background: var(--zc-surface-2);
-  padding: 1px 5px;
-  border-radius: 3px;
+.import-intro { font-size: 12.5px; color: var(--zc-text-dim); line-height: 1.6; margin: 0; }
+.import-mono  {
+  font-family: var(--zc-mono); font-size: 10.5px; color: var(--zc-text-faint);
+  background: var(--zc-surface-2); padding: 1px 5px; border-radius: 3px;
 }
 .import-dropzone {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 28px 20px;
-  border: 1.5px dashed var(--zc-border-strong);
-  border-radius: var(--zc-r-lg);
-  cursor: pointer;
-  transition: border-color .15s, background .15s;
-  min-height: 110px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+  padding: 28px 20px; border: 1.5px dashed var(--zc-border-strong); border-radius: var(--zc-r-lg);
+  cursor: pointer; transition: border-color .15s, background .15s; min-height: 110px;
 }
-.import-dropzone:hover {
-  border-color: var(--zc-accent);
-  background: rgba(124,106,247,.04);
-}
-.import-dropzone.selected {
-  border-color: var(--zc-success);
-  background: rgba(76,175,130,.05);
-}
-.import-dz-label {
-  font-size: 12.5px;
-  color: var(--zc-text-faint);
-}
-.import-file-name {
-  font-family: var(--zc-mono);
-  font-size: 11.5px;
-  color: var(--zc-success);
-  word-break: break-all;
-  text-align: center;
-}
+.import-dropzone:hover    { border-color: var(--zc-accent); background: rgba(124,106,247,.04); }
+.import-dropzone.selected { border-color: var(--zc-success); background: rgba(76,175,130,.05); }
+.import-dz-label  { font-size: 12.5px; color: var(--zc-text-faint); }
+.import-file-name { font-family: var(--zc-mono); font-size: 11.5px; color: var(--zc-success); word-break: break-all; text-align: center; }
 
-/* ── Step 2 — preview box ─────────────────────────────────────────────────── */
 .import-preview-box {
-  background: var(--zc-surface);
-  border: 1px solid var(--zc-border);
-  border-radius: var(--zc-r-lg);
-  padding: 13px 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  background: var(--zc-surface); border: 1px solid var(--zc-border);
+  border-radius: var(--zc-r-lg); padding: 13px 15px;
+  display: flex; flex-direction: column; gap: 8px;
 }
-.import-preview-title {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--zc-text);
-}
-.import-preview-stats {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--zc-text-dim);
-}
-.import-stat { }
+.import-preview-title { display: flex; align-items: center; gap: 7px; font-size: 13.5px; font-weight: 600; color: var(--zc-text); }
+.import-preview-stats { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--zc-text-dim); }
 .import-stat-sep { color: var(--zc-text-faint); }
 
-.import-col-list {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-top: 2px;
-}
-.import-col-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--zc-text-dim);
-}
-.import-col-dot {
-  width: 6px; height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
+.import-col-list { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
+.import-col-row  { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--zc-text-dim); }
+.import-col-dot  { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .import-col-name { flex: 1; }
-.import-col-count {
-  font-family: var(--zc-mono);
-  font-size: 10.5px;
-  color: var(--zc-text-faint);
-}
-.import-badge {
-  font-family: var(--zc-mono);
-  font-size: 9.5px;
-  padding: 1px 6px;
-  border-radius: 10px;
-  letter-spacing: .03em;
-  text-transform: uppercase;
-}
-.import-badge.done {
-  background: rgba(62,207,207,.12);
-  color: var(--zc-teal);
-}
+.import-col-count { font-family: var(--zc-mono); font-size: 10.5px; color: var(--zc-text-faint); }
+.import-badge    { font-family: var(--zc-mono); font-size: 9.5px; padding: 1px 6px; border-radius: 10px; letter-spacing: .03em; text-transform: uppercase; }
+.import-badge.done { background: rgba(62,207,207,.12); color: var(--zc-teal); }
 
 .import-warn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  flex-wrap: wrap;
-  font-size: 11.5px;
-  color: var(--zc-warning);
-  padding: 7px 10px;
-  background: rgba(224,160,80,.08);
-  border-radius: var(--zc-r-sm);
-  margin-top: 2px;
+  display: flex; align-items: center; gap: 5px; flex-wrap: wrap;
+  font-size: 11.5px; color: var(--zc-warning);
+  padding: 7px 10px; background: rgba(224,160,80,.08); border-radius: var(--zc-r-sm); margin-top: 2px;
 }
 
-/* ── Step 2 — destination ─────────────────────────────────────────────────── */
-.import-section-h {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  color: var(--zc-text-faint);
-  font-family: var(--zc-mono);
-}
-.import-dest-tabs {
-  display: flex;
-  gap: 6px;
-}
-.import-dest-tab {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: var(--zc-r);
-  border: 1px solid var(--zc-border);
-  background: transparent;
-  color: var(--zc-text-dim);
-  font: inherit;
-  font-size: 12.5px;
-  cursor: pointer;
+.import-section-h { font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--zc-text-faint); font-family: var(--zc-mono); }
+.import-dest-tabs { display: flex; gap: 6px; }
+.import-dest-tab  {
+  display: flex; align-items: center; gap: 6px; padding: 6px 14px;
+  border-radius: var(--zc-r); border: 1px solid var(--zc-border);
+  background: transparent; color: var(--zc-text-dim); font: inherit; font-size: 12.5px; cursor: pointer;
   transition: border-color .12s, color .12s, background .12s;
 }
-.import-dest-tab:hover { border-color: var(--zc-border-strong); color: var(--zc-text); }
-.import-dest-tab.active {
-  border-color: var(--zc-accent);
-  color: var(--zc-accent);
-  background: rgba(124,106,247,.07);
-}
-.import-dest-form {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.import-dest-tab:hover  { border-color: var(--zc-border-strong); color: var(--zc-text); }
+.import-dest-tab.active { border-color: var(--zc-accent); color: var(--zc-accent); background: rgba(124,106,247,.07); }
+.import-dest-form { display: flex; flex-direction: column; gap: 6px; }
 
 .import-project-list {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  max-height: 160px;
-  overflow-y: auto;
-  border: 1px solid var(--zc-border);
-  border-radius: var(--zc-r);
-  padding: 4px;
+  display: flex; flex-direction: column; gap: 3px;
+  max-height: 160px; overflow-y: auto;
+  border: 1px solid var(--zc-border); border-radius: var(--zc-r); padding: 4px;
 }
-.import-project-row {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 7px 10px;
-  border-radius: var(--zc-r-sm);
-  cursor: pointer;
-  transition: background .1s;
-}
-.import-project-row:hover { background: var(--zc-hover); }
+.import-project-row { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: var(--zc-r-sm); cursor: pointer; transition: background .1s; }
+.import-project-row:hover  { background: var(--zc-hover); }
 .import-project-row.active { background: rgba(124,106,247,.1); }
-.import-project-dot {
-  width: 10px; height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.import-project-name {
-  font-size: 13px;
-  color: var(--zc-text);
-  flex: 1;
-}
-.import-project-cat {
-  font-size: 10.5px;
-  font-family: var(--zc-mono);
-  color: var(--zc-text-faint);
-  background: var(--zc-surface-2);
-  padding: 1px 6px;
-  border-radius: 10px;
-}
-.import-no-projects {
-  font-size: 12.5px;
-  color: var(--zc-text-faint);
-  padding: 10px;
-  text-align: center;
-  border: 1px dashed var(--zc-border);
-  border-radius: var(--zc-r);
-}
-.import-existing-note {
-  font-size: 11.5px;
-  color: var(--zc-text-faint);
-  margin: 0;
-}
+.import-project-dot  { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.import-project-name { font-size: 13px; color: var(--zc-text); flex: 1; }
+.import-project-cat  { font-size: 10.5px; font-family: var(--zc-mono); color: var(--zc-text-faint); background: var(--zc-surface-2); padding: 1px 6px; border-radius: 10px; }
+.import-no-projects  { font-size: 12.5px; color: var(--zc-text-faint); padding: 10px; text-align: center; border: 1px dashed var(--zc-border); border-radius: var(--zc-r); }
+.import-existing-note { font-size: 11.5px; color: var(--zc-text-faint); margin: 0; }
 
-/* ── Step 3 — result ──────────────────────────────────────────────────────── */
-.import-result {
-  align-items: center;
-  justify-content: center;
-  min-height: 180px;
-}
-.import-loading {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  color: var(--zc-text-dim);
-  font-size: 13px;
-}
+.import-result { align-items: center; justify-content: center; min-height: 180px; }
+.import-loading { display: flex; flex-direction: column; align-items: center; gap: 14px; color: var(--zc-text-dim); font-size: 13px; }
 .import-spinner {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  border: 3px solid var(--zc-border-strong);
-  border-top-color: var(--zc-accent);
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 3px solid var(--zc-border-strong); border-top-color: var(--zc-accent);
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.import-success {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  text-align: center;
-}
-.import-success-icon {
-  width: 52px; height: 52px;
-  border-radius: 50%;
-  background: rgba(76,175,130,.15);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--zc-success);
-}
-.import-success-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--zc-text);
-}
-.import-success-stats {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--zc-text-dim);
-}
+.import-success { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.import-success-icon { width: 52px; height: 52px; border-radius: 50%; background: rgba(76,175,130,.15); display: flex; align-items: center; justify-content: center; color: var(--zc-success); }
+.import-success-title { font-size: 15px; font-weight: 600; color: var(--zc-text); }
+.import-success-stats { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--zc-text-dim); }
 
-/* ── Error banner ─────────────────────────────────────────────────────────── */
 .import-error {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--zc-danger);
-  background: rgba(224,92,92,.08);
-  padding: 8px 12px;
-  border-radius: var(--zc-r-sm);
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--zc-danger);
+  background: rgba(224,92,92,.08); padding: 8px 12px; border-radius: var(--zc-r-sm);
 }
 </style>

@@ -33,3 +33,9 @@ yarn-error.log*
 *.ntvs*
 *.njsproj
 *.sln
+
+#  tauri
+/src-tauri/target
+/src-tauri/src-tauri/target
+/src-tauri/src-tauri/node_modules
+/src-tauri/src-tauri/.env

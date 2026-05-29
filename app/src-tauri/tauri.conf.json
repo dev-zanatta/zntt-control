@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "zntt-control",
+  "version": "1.0.0",
+  "identifier": "com.zntt.control",
+  "build": {
+    "frontendDist": "../dist/spa",
+    "devUrl": "http://localhost:8080",
+    "beforeDevCommand": "quasar dev",
+    "beforeBuildCommand": "quasar build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "zntt-control",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 900,
+        "minHeight": 600,
+        "decorations": false,
+        "shadow": true,
+        "backgroundColor": "#0d0d0d",
+        "visible": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost blob: data:; style-src 'self' 'unsafe-inline'; script-src 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

@@ -6,16 +6,23 @@
   "author": "zntt",
   "private": true,
   "scripts": {
-    "dev": "quasar dev -m electron",
-    "build": "quasar build -m electron",
-    "build:installer": "cross-env npm_config_runtime=electron npm_config_target=28.3.3 CSC_IDENTITY_AUTO_DISCOVERY=false quasar build -m electron",
-    "rebuild": "electron-rebuild -f -w better-sqlite3",
+    "dev": "quasar dev",
+    "build": "quasar build",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "quasar build && tauri build",
+    "gen_installer_win": "tauri build --target x86_64-pc-windows-msvc",
+    "gen_installer_mac": "tauri build --target universal-apple-darwin",
+    "gen_installer_linux": "tauri build --target x86_64-unknown-linux-gnu",
     "lint": "eslint --ext .js,.vue ./"
   },
   "dependencies": {
     "@quasar/extras": "^1.16.0",
+    "@tauri-apps/api": "^2",
+    "@tauri-apps/plugin-dialog": "^2",
+    "@tauri-apps/plugin-fs": "^2",
+    "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-sql": "^2",
     "@vueuse/core": "^10.9.0",
-    "better-sqlite3": "^9.4.0",
     "pinia": "^2.1.7",
     "quasar": "^2.16.0",
     "sortablejs": "^1.15.7",
@@ -23,17 +30,12 @@
     "vue-draggable-plus": "^0.6.1"
   },
   "devDependencies": {
-    "@electron/rebuild": "^3.6.0",
     "@quasar/app-webpack": "^3.13.0",
-    "cross-env": "^10.1.0",
-    "electron": "^28.0.0",
-    "electron-builder": "^24.9.0",
+    "@tauri-apps/cli": "^2",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-vue": "^9.23.0",
-    "png-to-ico": "^3.0.1",
     "prettier": "^3.2.5",
-    "rcedit": "^5.0.2",
     "sass": "^1.71.1",
     "sass-loader": "^14.2.1"
   }

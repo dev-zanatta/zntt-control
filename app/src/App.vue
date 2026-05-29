@@ -4,11 +4,12 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useUiStore } from 'src/stores/uiStore'
+import { useSettings } from 'src/domains/settings/useSettings'
 
-const uiStore = useUiStore()
+const { init } = useSettings()
 
 onMounted(async () => {
-  await uiStore.initTheme()
+  // await initDb()
+  await init()
 })
 </script>

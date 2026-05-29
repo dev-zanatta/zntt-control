@@ -68,10 +68,8 @@
 
           <div class="zc-task-section" style="margin: 4px 0 0;">
             <div class="zc-task-section-h">Columns</div>
-            <div v-for="(col, idx) in cols" :key="col.id" class="zc-coldef">
-              <span class="zc-coldef-grip">
-                <ZIcon name="grip" :size="13" :stroke="1" />
-              </span>
+            <div v-for="col in cols" :key="col.id" class="zc-coldef">
+              <span class="zc-coldef-grip"><ZIcon name="grip" :size="13" :stroke="1" /></span>
               <input
                 class="zc-input zc-coldef-input"
                 :value="col.name"
@@ -82,11 +80,7 @@
                 <span :class="['zc-radio', col.done ? 'active' : '']" />
                 done
               </label>
-              <button
-                class="zc-btn ghost sm icon zc-coldef-x"
-                type="button"
-                @click="delCol(col.id)"
-              >
+              <button class="zc-btn ghost sm icon zc-coldef-x" type="button" @click="delCol(col.id)">
                 <ZIcon name="x" :size="12" />
               </button>
             </div>
@@ -116,7 +110,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import ZIcon from 'src/components/common/ZIcon.vue'
-import { useIpc } from 'src/composables/useIpc'
+import { useProject }  from 'src/domains/project/useProject'
+import { useBoard }    from 'src/domains/board/useBoard'
+import { useCategory } from 'src/domains/category/useCategory'
+import { useApp }      from 'src/domains/app/useApp'
+import { PROJECT_COLORS } from 'src/domains/project/project.entity'
+import { readFile } from '@tauri-apps/plugin-fs'
 
 const props = defineProps({
   existingCategories: { type: Array, default: () => [] },
@@ -124,12 +123,10 @@ const props = defineProps({
 
 const emit = defineEmits(['close', 'created'])
 
-const api = useIpc()
-
-const PROJECT_COLORS = [
-  '#7c6af7', '#3ecfcf', '#e0a050', '#4caf82',
-  '#e05c5c', '#9b7af7', '#7c9af7', '#e6b070',
-]
+const { createProject } = useProject()
+const { createColumn }  = useBoard()
+const { findOrCreateCategory } = useCategory()
+const { selectFile } = useApp()
 
 let colIdCounter = 10
 const DEFAULT_COLS = [
@@ -139,35 +136,38 @@ const DEFAULT_COLS = [
   { id: 'c4', name: 'Done',    done: true  },
 ]
 
-const nameInput = ref(null)
-const name = ref('')
-const color = ref(PROJECT_COLORS[0])
-const category = ref('')
-const cols = ref(DEFAULT_COLS.map(c => ({ ...c })))
-const logoPath = ref(null)
+const nameInput  = ref(null)
+const name       = ref('')
+const color      = ref(PROJECT_COLORS[0])
+const category   = ref('')
+const cols       = ref(DEFAULT_COLS.map((c) => ({ ...c })))
+const logoPath   = ref(null)
 const logoPreview = ref(null)
-const saving = ref(false)
+const saving     = ref(false)
 
 const nameInitials = computed(() => (name.value || 'P').slice(0, 2).toUpperCase())
 
 function setColName(id, val) {
-  cols.value = cols.value.map(c => c.id === id ? { ...c, name: val } : c)
+  cols.value = cols.value.map((c) => (c.id === id ? { ...c, name: val } : c))
 }
 function setDone(id) {
-  cols.value = cols.value.map(c => ({ ...c, done: c.id === id }))
+  cols.value = cols.value.map((c) => ({ ...c, done: c.id === id }))
 }
 function delCol(id) {
-  cols.value = cols.value.filter(c => c.id !== id)
+  cols.value = cols.value.filter((c) => c.id !== id)
 }
 function addCol() {
   cols.value.push({ id: 'c' + (++colIdCounter), name: '', done: false })
 }
 
 async function chooseLogo() {
-  const filePath = await api.selectFile()
+  const filePath = await selectFile()
   if (!filePath) return
   logoPath.value = filePath
-  logoPreview.value = `file:///${filePath.replace(/\\/g, '/')}`
+  const bytes = await readFile(filePath)
+  const blob = new Blob([bytes])
+  if (logoPreview.value?.startsWith('blob:')) URL.revokeObjectURL(logoPreview.value)
+  logoPreview.value = URL.createObjectURL(blob)
 }
 
 async function submit() {
@@ -176,34 +176,23 @@ async function submit() {
   try {
     let categoryId = null
     if (category.value.trim()) {
-      const existing = props.existingCategories.find(
-        c => c.name.toLowerCase() === category.value.trim().toLowerCase()
-      )
-      if (existing) {
-        categoryId = existing.id
-      } else {
-        const newCat = await api.createCategory(category.value.trim())
-        categoryId = newCat.id
-      }
+      const cat = await findOrCreateCategory(category.value.trim(), props.existingCategories)
+      categoryId = cat.id
     }
 
-    let project = await api.createProject({
-      name: name.value.trim(),
-      color: color.value,
+    const project = await createProject({
+      name:       name.value.trim(),
+      color:      color.value,
       category_id: categoryId,
+      logoPath:   logoPath.value,
     })
 
-    if (logoPath.value) {
-      await api.saveProjectLogo(project.id, logoPath.value)
-      project = { ...project, logo_path: `attachments/projects/${project.id}/logo` }
-    }
-
-    const validCols = cols.value.filter(c => c.name.trim())
+    const validCols = cols.value.filter((c) => c.name.trim())
     for (let i = 0; i < validCols.length; i++) {
-      await api.createColumn({
-        project_id: project.id,
-        name: validCols[i].name.trim(),
-        position: i,
+      await createColumn({
+        project_id:     project.id,
+        name:           validCols[i].name.trim(),
+        position:       i,
         is_done_column: validCols[i].done ? 1 : 0,
       })
     }

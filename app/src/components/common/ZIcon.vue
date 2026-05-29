@@ -55,7 +55,6 @@ const ICONS = {
   winMin:     '<line x1="4" y1="12" x2="20" y2="12" />',
   winMax:     '<rect x="3" y="3" width="18" height="18" rx="2" />',
   winRestore: '<rect x="8" y="8" width="13" height="13" rx="1.5" /><path d="M3 14V5a2 2 0 0 1 2-2h9" />',
-  // 8-bit / pixel theme icon — four squares forming a diamond pixel pattern
   pixel:      '<rect x="9" y="2"  width="6" height="6" fill="currentColor" stroke="none"/><rect x="2"  y="9"  width="6" height="6" fill="currentColor" stroke="none"/><rect x="16" y="9"  width="6" height="6" fill="currentColor" stroke="none"/><rect x="9"  y="16" width="6" height="6" fill="currentColor" stroke="none"/>',
 }
 

@@ -1,7 +1,6 @@
 <template>
   <div class="zc-sidebar">
 
-    <!-- Logo mark -->
     <div class="zc-sb-logo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <defs>
@@ -20,7 +19,6 @@
       </svg>
     </div>
 
-    <!-- Dashboard -->
     <button
       class="zc-sb-item"
       :class="{ active: route.name === 'dashboard' || route.name === 'project-board' }"
@@ -30,16 +28,14 @@
       <ZIcon name="grid" :size="18" />
     </button>
 
-    <!-- Search (Ctrl+K) -->
     <button
       class="zc-sb-item"
       title="Search tasks (Ctrl+K)"
-      @click="uiStore.openSearch()"
+      @click="openSearch()"
     >
       <ZIcon name="search" :size="17" />
     </button>
 
-    <!-- Settings -->
     <button
       class="zc-sb-item"
       :class="{ active: route.name === 'settings' }"
@@ -55,12 +51,12 @@
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
-import { useUiStore } from 'src/stores/uiStore'
+import { useSettings } from 'src/domains/settings/useSettings'
 import ZIcon from 'src/components/common/ZIcon.vue'
 
-const route    = useRoute()
-const router   = useRouter()
-const uiStore  = useUiStore()
+const route  = useRoute()
+const router = useRouter()
+const { openSearch } = useSettings()
 </script>
 
 <style scoped>
@@ -98,15 +94,10 @@ const uiStore  = useUiStore()
   align-items: center;
   justify-content: center;
   position: relative;
-  transition:
-    background var(--zntt-transition),
-    color var(--zntt-transition);
+  transition: background var(--zntt-transition), color var(--zntt-transition);
 }
 
-.zc-sb-item:hover {
-  background: var(--zntt-bg-hover);
-  color: var(--zntt-text-primary);
-}
+.zc-sb-item:hover { background: var(--zntt-bg-hover); color: var(--zntt-text-primary); }
 
 .zc-sb-item.active {
   color: var(--zntt-text-primary);
@@ -124,7 +115,5 @@ const uiStore  = useUiStore()
   background: var(--zntt-accent);
 }
 
-.zc-sb-spacer {
-  flex: 1;
-}
+.zc-sb-spacer { flex: 1; }
 </style>

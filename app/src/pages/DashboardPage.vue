@@ -3,7 +3,7 @@
     <header class="zc-page-hd">
       <div>
         <h1 class="zc-page-title">Projects</h1>
-        <p class="zc-page-sub">{{ store.projects.length }} projects · {{ stats.active }} active</p>
+        <p class="zc-page-sub">{{ projects.length }} projects · {{ stats.active }} active</p>
       </div>
       <button class="zc-btn secondary" @click="showImportModal = true">
         <ZIcon name="download" :size="14" />
@@ -18,7 +18,7 @@
     <div class="zc-dash-body">
       <div class="zc-dash-summary">
         <div class="zc-dash-stat">
-          <span class="zc-dash-stat-val">{{ store.projects.length }}</span>
+          <span class="zc-dash-stat-val">{{ projects.length }}</span>
           <span class="zc-dash-stat-lab">projects</span>
         </div>
         <div class="zc-dash-stat">
@@ -44,7 +44,7 @@
         </div>
       </div>
 
-      <template v-if="store.projects.length === 0 && !store.loading">
+      <template v-if="projects.length === 0 && !loading">
         <div class="zc-empty">
           <div class="zc-empty-icon">
             <ZIcon name="folder" :size="28" :stroke="1.4" />
@@ -71,7 +71,7 @@
           @click="openProject(project)"
           @toggle-status="toggleStatus(project)"
           @delete="confirmDelete(project)"
-          @settings="openSettings(project)"
+          @settings="openProject(project)"
         />
       </div>
     </div>
@@ -114,62 +114,53 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useProjectsStore } from 'src/stores/projectsStore'
-import { useIpc } from 'src/composables/useIpc'
-import ZIcon from 'src/components/common/ZIcon.vue'
-import ProjectCard from 'src/components/dashboard/ProjectCard.vue'
-import NewProjectModal from 'src/components/modals/NewProjectModal.vue'
+import { useProject }  from 'src/domains/project/useProject'
+import { useCategory } from 'src/domains/category/useCategory'
+import ZIcon            from 'src/components/common/ZIcon.vue'
+import ProjectCard      from 'src/components/dashboard/ProjectCard.vue'
+import NewProjectModal  from 'src/components/modals/NewProjectModal.vue'
 import ImportTrelloModal from 'src/components/modals/ImportTrelloModal.vue'
 
 const router = useRouter()
-const store = useProjectsStore()
-const api = useIpc()
+const { projects, loading, fetchProjects, updateProjectStatus, deleteProject } = useProject()
+const { categories, fetchCategories } = useCategory()
 
 const showNewModal    = ref(false)
 const showImportModal = ref(false)
 const pendingDelete   = ref(null)
-const categories = ref([])
-const activeFilter = ref('all')
+const activeFilter    = ref('all')
 
-const stats = computed(() => {
-  const active = store.projects.filter(p => p.status === 'active').length
-  const totalTasks = store.projects.reduce((s, p) => s + (p.total_tasks || 0), 0)
-  const doneTasks = store.projects.reduce((s, p) => s + (p.done_tasks || 0), 0)
-  return { active, totalTasks, doneTasks }
-})
+const stats = computed(() => ({
+  active:     projects.value.filter((p) => p.status === 'active').length,
+  totalTasks: projects.value.reduce((s, p) => s + (p.total_tasks || 0), 0),
+  doneTasks:  projects.value.reduce((s, p) => s + (p.done_tasks  || 0), 0),
+}))
 
 const filters = computed(() => {
   const cats = [...new Set(
-    store.projects
-      .filter(p => p.category_name)
-      .map(p => p.category_name)
+    projects.value.filter((p) => p.category_name).map((p) => p.category_name)
   )]
-  const hasPaused = store.projects.some(p => p.status === 'paused')
+  const hasPaused = projects.value.some((p) => p.status === 'paused')
   return ['all', ...cats, ...(hasPaused ? ['paused'] : [])]
 })
 
 const filteredProjects = computed(() => {
-  if (activeFilter.value === 'all') return store.projects
-  if (activeFilter.value === 'paused') return store.projects.filter(p => p.status === 'paused')
-  return store.projects.filter(p => p.category_name === activeFilter.value)
+  if (activeFilter.value === 'all')    return projects.value
+  if (activeFilter.value === 'paused') return projects.value.filter((p) => p.status === 'paused')
+  return projects.value.filter((p) => p.category_name === activeFilter.value)
 })
 
 async function loadData() {
-  await store.fetchProjects()
-  categories.value = await api.getCategories()
+  await Promise.all([fetchProjects(), fetchCategories()])
 }
 
 function openProject(project) {
   router.push(`/project/${project.id}`)
 }
 
-function openSettings(project) {
-  router.push(`/project/${project.id}`)
-}
-
 async function toggleStatus(project) {
   const newStatus = project.status === 'paused' ? 'active' : 'paused'
-  await store.updateProjectStatus(project.id, newStatus)
+  await updateProjectStatus(project.id, newStatus)
 }
 
 function confirmDelete(project) {
@@ -178,19 +169,18 @@ function confirmDelete(project) {
 
 async function doDelete() {
   if (!pendingDelete.value) return
-  await store.deleteProject(pendingDelete.value.id)
+  await deleteProject(pendingDelete.value.id)
   pendingDelete.value = null
 }
 
 function onProjectCreated(project) {
-  store.projects.unshift(project)
+  projects.value.unshift(project)
   showNewModal.value = false
   router.push(`/project/${project.id}`)
 }
 
 async function onImported() {
-  // Refresh project list; navigation and modal close are handled by the modal itself
-  await store.fetchProjects()
+  await fetchProjects()
 }
 
 onMounted(loadData)

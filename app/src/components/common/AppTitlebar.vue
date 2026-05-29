@@ -1,9 +1,7 @@
 <template>
   <div class="app-titlebar">
 
-    <!-- Draggable region: logo + name -->
     <div class="app-tb-drag">
-      <!-- Inline Z logo SVG -->
       <svg class="app-tb-logo" width="18" height="18" viewBox="0 0 24 24" fill="none">
         <defs>
           <linearGradient id="tbZ" x1="4" y1="4" x2="20" y2="20" gradientUnits="userSpaceOnUse">
@@ -22,15 +20,14 @@
       <span class="app-tb-name">zntt-control</span>
     </div>
 
-    <!-- Window controls (not draggable) -->
     <div class="app-tb-controls">
-      <button class="app-tb-btn" title="Minimize" @click="api.winMinimize()">
+      <button class="app-tb-btn" title="Minimize" @click="winMinimize()">
         <ZIcon name="winMin" :size="10" :stroke="2" />
       </button>
-      <button class="app-tb-btn" title="Maximize / Restore" @click="api.winMaximize()">
+      <button class="app-tb-btn" title="Maximize / Restore" @click="winMaximize()">
         <ZIcon :name="isMaximized ? 'winRestore' : 'winMax'" :size="10" :stroke="1.8" />
       </button>
-      <button class="app-tb-btn close" title="Close" @click="api.winClose()">
+      <button class="app-tb-btn close" title="Close" @click="winClose()">
         <ZIcon name="x" :size="11" :stroke="2" />
       </button>
     </div>
@@ -40,19 +37,25 @@
 
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import { useIpc } from 'src/composables/useIpc'
+import { useApp } from 'src/domains/app/useApp'
 import ZIcon from './ZIcon.vue'
 
-const api = useIpc()
+const { winMinimize, winMaximize, winClose, winIsMaximized, onMaximizeChange } = useApp()
 const isMaximized = ref(false)
+
+let unsubscribe = null
 
 onMounted(async () => {
   try {
-    isMaximized.value = await api.winIsMaximized()
-    api.onMaximizeChange((val) => { isMaximized.value = val })
+    isMaximized.value = await winIsMaximized()
+    unsubscribe = await onMaximizeChange((val) => { isMaximized.value = val })
   } catch (_) {
-    // graceful in non-electron env
+    // show error if exists
   }
+})
+
+onBeforeUnmount(() => {
+  if (typeof unsubscribe === 'function') unsubscribe()
 })
 </script>
 
@@ -67,7 +70,6 @@ onMounted(async () => {
   user-select: none;
 }
 
-/* Draggable zone */
 .app-tb-drag {
   flex: 1;
   display: flex;
@@ -77,9 +79,7 @@ onMounted(async () => {
   -webkit-app-region: drag;
 }
 
-.app-tb-logo {
-  flex-shrink: 0;
-}
+.app-tb-logo { flex-shrink: 0; }
 
 .app-tb-name {
   font-family: var(--zc-mono);
@@ -89,7 +89,6 @@ onMounted(async () => {
   letter-spacing: 0.05em;
 }
 
-/* Window control buttons */
 .app-tb-controls {
   display: flex;
   -webkit-app-region: no-drag;
@@ -108,13 +107,6 @@ onMounted(async () => {
   transition: background 100ms, color 100ms;
 }
 
-.app-tb-btn:hover {
-  background: var(--zc-hover);
-  color: var(--zc-text);
-}
-
-.app-tb-btn.close:hover {
-  background: #c42b1c;
-  color: #ffffff;
-}
+.app-tb-btn:hover { background: var(--zc-hover); color: var(--zc-text); }
+.app-tb-btn.close:hover { background: #c42b1c; color: #ffffff; }
 </style>

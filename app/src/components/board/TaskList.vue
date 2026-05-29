@@ -34,10 +34,8 @@ function init() {
     handle:     '.zc-tcard-grip',
     ghostClass: 'tcard-ghost',
     animation:  150,
-    // data attribute on the container so onAdd knows the source column
     dataIdAttr: 'data-task-id',
 
-    // Reorder within this column
     onUpdate(evt) {
       emit('reorder', {
         colId:    props.colId,
@@ -46,27 +44,22 @@ function init() {
       })
     },
 
-    // Task dragged FROM another column INTO this one
     onAdd(evt) {
       const taskId = parseInt(evt.item.getAttribute('data-task-id'))
       const fromColId = parseInt(evt.from.getAttribute('data-col-id'))
       const newIndex  = evt.newIndex
 
-      // Remove the DOM node SortableJS moved — Vue will re-render it correctly
-      // once we update the reactive model in the parent
       evt.item.parentNode?.removeChild(evt.item)
 
       emit('moved', { taskId, fromColId, toColId: props.colId, newIndex })
     },
   })
 
-  // Stamp the container with its column ID so onAdd can read it
   listEl.value.setAttribute('data-col-id', props.colId)
 }
 
 onMounted(init)
 
-// Re-init when the column ID changes (rare, but safe)
 watch(() => props.colId, init)
 
 onBeforeUnmount(() => sortable?.destroy())

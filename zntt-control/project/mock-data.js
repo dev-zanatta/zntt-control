@@ -1,6 +1,3 @@
-// mock-data.js — sample projects + tasks for zntt-control
-// Mix realistic: dev + personal + study
-
 window.ZC_MOCK = (function () {
   const projects = [
     {

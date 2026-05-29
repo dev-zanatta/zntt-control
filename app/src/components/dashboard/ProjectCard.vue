@@ -43,6 +43,7 @@
 
 <script setup>
 import { computed } from 'vue'
+import { convertFileSrc } from '@tauri-apps/api/core'
 import ZIcon from 'src/components/common/ZIcon.vue'
 
 const props = defineProps({
@@ -64,9 +65,7 @@ const pct = computed(() => {
 const logoSrc = computed(() => {
   const p = props.project.logo_path
   if (!p) return null
-  // Absolute path (Windows C:\... or Unix /) → file protocol
-  if (/^[A-Za-z]:/.test(p) || p.startsWith('/')) return `file:///${p.replaceAll('\\', '/')}`
-  // Relative path stored in DB → served via registered zntt-userdata protocol
-  return `zntt-userdata://${p}`
+  if (p.startsWith('blob:') || p.startsWith('data:')) return p
+  return convertFileSrc(p)
 })
 </script>
