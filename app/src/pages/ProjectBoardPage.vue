@@ -198,7 +198,7 @@ const newColDone = ref(false)
 const addColInput = ref(null)
 
 async function load() {
-  const id = parseInt(route.params.id)
+  const id = route.params.id
   await Promise.all([fetchProject(id), fetchBoard(id)])
 }
 
@@ -261,7 +261,7 @@ function cancelAddTask() {
 async function doCreateTask(col) {
   if (!newTaskTitle.value.trim()) return
   const task = await createTask({
-    project_id: parseInt(route.params.id),
+    project_id: route.params.id,
     column_id:  col.id,
     title:      newTaskTitle.value.trim(),
   })
@@ -290,7 +290,7 @@ function onDragMoved({ taskId, fromColId, toColId, newIndex }) {
 }
 
 function onColReorder() {
-  reorderColumns(parseInt(route.params.id))
+  reorderColumns(route.params.id)
 }
 
 function startEditCol(col) {
@@ -313,7 +313,7 @@ function startAddCol() {
 async function doCreateColumn() {
   if (!newColName.value.trim()) return
   await createColumn({
-    project_id:     parseInt(route.params.id),
+    project_id:     route.params.id,
     name:           newColName.value.trim(),
     position:       columns.value.length,
     is_done_column: newColDone.value ? 1 : 0,
@@ -325,7 +325,7 @@ async function doCreateColumn() {
 
 async function onProjectUpdated() {
   await Promise.all([
-    fetchProject(parseInt(route.params.id)),
+    fetchProject(route.params.id),
     fetchProjects(),
   ])
 }
@@ -335,7 +335,7 @@ function onProjectDeleted() {
 }
 
 async function onColumnsChanged() {
-  await fetchBoard(parseInt(route.params.id))
+  await fetchBoard(route.params.id)
 }
 </script>
 

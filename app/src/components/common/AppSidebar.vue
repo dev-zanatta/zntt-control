@@ -46,17 +46,31 @@
     </button>
 
     <div class="zc-sb-spacer" />
+
+    <button
+      class="zc-sb-item"
+      title="Sign out"
+      @click="handleLogout"
+    >
+      <ZIcon name="log-out" :size="17" />
+    </button>
   </div>
 </template>
 
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { useSettings } from 'src/domains/settings/useSettings'
+import { AuthService } from 'src/domains/auth/auth.service'
 import ZIcon from 'src/components/common/ZIcon.vue'
 
 const route  = useRoute()
 const router = useRouter()
 const { openSearch } = useSettings()
+
+async function handleLogout() {
+  await AuthService.logout()
+  router.push({ name: 'login' })
+}
 </script>
 
 <style scoped>

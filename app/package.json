@@ -23,6 +23,7 @@
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-sql": "^2",
     "@vueuse/core": "^10.9.0",
+    "axios": "^1.16.1",
     "pinia": "^2.1.7",
     "quasar": "^2.16.0",
     "sortablejs": "^1.15.7",

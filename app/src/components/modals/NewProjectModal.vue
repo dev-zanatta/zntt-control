@@ -111,7 +111,6 @@
 import { ref, computed, onMounted } from 'vue'
 import ZIcon from 'src/components/common/ZIcon.vue'
 import { useProject }  from 'src/domains/project/useProject'
-import { useBoard }    from 'src/domains/board/useBoard'
 import { useCategory } from 'src/domains/category/useCategory'
 import { useApp }      from 'src/domains/app/useApp'
 import { PROJECT_COLORS } from 'src/domains/project/project.entity'
@@ -124,7 +123,6 @@ const props = defineProps({
 const emit = defineEmits(['close', 'created'])
 
 const { createProject } = useProject()
-const { createColumn }  = useBoard()
 const { findOrCreateCategory } = useCategory()
 const { selectFile } = useApp()
 
@@ -180,22 +178,19 @@ async function submit() {
       categoryId = cat.id
     }
 
-    const project = await createProject({
-      name:       name.value.trim(),
-      color:      color.value,
-      category_id: categoryId,
-      logoPath:   logoPath.value,
-    })
-
     const validCols = cols.value.filter((c) => c.name.trim())
-    for (let i = 0; i < validCols.length; i++) {
-      await createColumn({
-        project_id:     project.id,
-        name:           validCols[i].name.trim(),
-        position:       i,
-        is_done_column: validCols[i].done ? 1 : 0,
-      })
-    }
+    const columns = validCols.map((c, i) => ({
+      nome:           c.name.trim(),
+      posicao:        i,
+      is_done_column: c.done,
+    }))
+
+    const project = await createProject({
+      name:        name.value.trim(),
+      color:       color.value,
+      category_id: categoryId,
+      columns,
+    })
 
     emit('created', project)
   } finally {

@@ -31,6 +31,14 @@
       <button class="zc-btn icon" title="Settings" @click="$emit('settings')">
         <ZIcon name="settings" :size="13" />
       </button>
+      <button
+        v-if="project.is_owner"
+        class="zc-btn icon"
+        title="Share project"
+        @click="$emit('share')"
+      >
+        <ZIcon name="share-2" :size="13" />
+      </button>
       <button class="zc-btn icon" :title="project.status === 'paused' ? 'Resume' : 'Pause'" @click="$emit('toggle-status')">
         <ZIcon :name="project.status === 'paused' ? 'play' : 'pause'" :size="13" />
       </button>
@@ -50,7 +58,7 @@ const props = defineProps({
   project: { type: Object, required: true },
 })
 
-defineEmits(['click', 'settings', 'toggle-status', 'delete'])
+defineEmits(['click', 'settings', 'share', 'toggle-status', 'delete'])
 
 const initials = computed(() =>
   (props.project.name || 'P').slice(0, 2).toUpperCase()

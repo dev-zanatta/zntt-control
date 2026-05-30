@@ -206,7 +206,7 @@ const emit = defineEmits(['close', 'deleted', 'moved', 'updated'])
 
 const { PRIORITIES, updateTask, moveTask, deleteTask, getPriorityColor } = useTask()
 const { createSubtask, toggleSubtask, deleteSubtask } = useSubtask()
-const { attachError, addAttachment, deleteAttachment, openAttachment, formatSize } = useAttachment()
+const { attachError, addAttachment, deleteAttachment, formatSize } = useAttachment()
 const { selectFile } = useApp()
 
 const localTitle       = ref(props.task.title)
@@ -269,8 +269,9 @@ async function doAddAttachment() {
   if (att) localAttachments.value.push(att)
 }
 
-async function doOpenAttachment(id) {
-  await openAttachment(id)
+function doOpenAttachment(id) {
+  const att = localAttachments.value.find((a) => a.id === id)
+  if (att?.url) window.open(att.url, '_blank')
 }
 
 async function doDeleteAttachment(id) {

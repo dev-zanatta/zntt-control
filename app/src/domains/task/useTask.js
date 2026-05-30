@@ -79,7 +79,14 @@ export function useAttachment() {
     try {
       const filePath = await selectFileFn()
       if (!filePath) return null
-      return await TaskService.addAttachment(taskId, filePath)
+
+      // Read file bytes via Tauri and create a File object for FormData
+      const { readFile } = await import('@tauri-apps/plugin-fs')
+      const bytes    = await readFile(filePath)
+      const filename = filePath.split(/[\\/]/).pop() || 'attachment'
+      const file     = new File([new Uint8Array(bytes)], filename)
+
+      return await TaskService.addAttachment(taskId, file)
     } catch (e) {
       attachError.value = e?.message || 'Failed to attach file'
       return null
@@ -90,15 +97,10 @@ export function useAttachment() {
     await TaskService.deleteAttachment(id)
   }
 
-  async function openAttachment(id) {
-    await TaskService.openAttachment(id)
-  }
-
   return {
     attachError,
     addAttachment,
     deleteAttachment,
-    openAttachment,
     formatSize: Attachment.formatSize,
   }
 }

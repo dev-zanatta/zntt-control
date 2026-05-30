@@ -52,6 +52,39 @@ export function useProject() {
     if (currentProject.value?.id === id) currentProject.value = null
   }
 
+  // ── Compartilhamento ───────────────────────────────────────────
+
+  async function getInviteCode(id) {
+    const data = await ProjectService.getInviteCode(id)
+    return data.invite_code
+  }
+
+  async function refreshInviteCode(id) {
+    const data = await ProjectService.refreshInviteCode(id)
+    return data.invite_code
+  }
+
+  async function joinProject(code) {
+    return ProjectService.join(code)
+  }
+
+  async function getMembers(id) {
+    return ProjectService.getMembers(id)
+  }
+
+  async function acceptMember(projectId, userId) {
+    const member = await ProjectService.acceptMember(projectId, userId)
+    return member
+  }
+
+  async function rejectMember(projectId, userId) {
+    return ProjectService.rejectMember(projectId, userId)
+  }
+
+  async function removeMember(projectId, userId) {
+    await ProjectService.removeMember(projectId, userId)
+  }
+
   return {
     projects,
     currentProject,
@@ -68,5 +101,12 @@ export function useProject() {
     getProgress: Project.progress,
     getInitials: Project.initials,
     getLogoSrc:  Project.logoSrc,
+    getInviteCode,
+    refreshInviteCode,
+    joinProject,
+    getMembers,
+    acceptMember,
+    rejectMember,
+    removeMember,
   }
 }

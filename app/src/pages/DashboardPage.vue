@@ -9,6 +9,10 @@
         <ZIcon name="download" :size="14" />
         Import from Trello
       </button>
+      <button class="zc-btn ghost" @click="showJoinModal = true">
+        <ZIcon name="log-in" :size="14" />
+        Join project
+      </button>
       <button class="zc-btn primary" @click="showNewModal = true">
         <ZIcon name="plus" :size="14" />
         New Project
@@ -72,6 +76,7 @@
           @toggle-status="toggleStatus(project)"
           @delete="confirmDelete(project)"
           @settings="openProject(project)"
+          @share="openShare(project)"
         />
       </div>
     </div>
@@ -88,6 +93,17 @@
         v-if="showImportModal"
         @close="showImportModal = false"
         @imported="onImported"
+      />
+
+      <ShareProjectModal
+        v-if="shareProjectId"
+        :project-id="shareProjectId"
+        @close="shareProjectId = null"
+      />
+
+      <JoinProjectModal
+        v-if="showJoinModal"
+        @close="showJoinModal = false"
       />
 
       <div v-if="pendingDelete" class="zc-modal-overlay zc-fade" @click="pendingDelete = null">
@@ -116,10 +132,12 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useProject }  from 'src/domains/project/useProject'
 import { useCategory } from 'src/domains/category/useCategory'
-import ZIcon            from 'src/components/common/ZIcon.vue'
-import ProjectCard      from 'src/components/dashboard/ProjectCard.vue'
-import NewProjectModal  from 'src/components/modals/NewProjectModal.vue'
+import ZIcon             from 'src/components/common/ZIcon.vue'
+import ProjectCard       from 'src/components/dashboard/ProjectCard.vue'
+import NewProjectModal   from 'src/components/modals/NewProjectModal.vue'
 import ImportTrelloModal from 'src/components/modals/ImportTrelloModal.vue'
+import ShareProjectModal from 'src/components/modals/ShareProjectModal.vue'
+import JoinProjectModal  from 'src/components/modals/JoinProjectModal.vue'
 
 const router = useRouter()
 const { projects, loading, fetchProjects, updateProjectStatus, deleteProject } = useProject()
@@ -127,6 +145,8 @@ const { categories, fetchCategories } = useCategory()
 
 const showNewModal    = ref(false)
 const showImportModal = ref(false)
+const showJoinModal   = ref(false)
+const shareProjectId  = ref(null)
 const pendingDelete   = ref(null)
 const activeFilter    = ref('all')
 
@@ -161,6 +181,10 @@ function openProject(project) {
 async function toggleStatus(project) {
   const newStatus = project.status === 'paused' ? 'active' : 'paused'
   await updateProjectStatus(project.id, newStatus)
+}
+
+function openShare(project) {
+  shareProjectId.value = project.id
 }
 
 function confirmDelete(project) {

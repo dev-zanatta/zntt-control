@@ -16,6 +16,9 @@ module.exports = configure(function (/* ctx */) {
         node: 'node20',
       },
       vueRouterMode: 'hash',
+      env: {
+        API_BASE_URL: process.env.API_BASE_URL || 'http://localhost:8000',
+      },
     },
 
     devServer: {
