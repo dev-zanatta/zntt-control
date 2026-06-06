@@ -354,6 +354,14 @@ async function onColumnsChanged() {
   border: 1px dashed var(--zc-accent) !important;
 }
 
+:global(.sortable-fallback) {
+  opacity: 0.9 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55) !important;
+  pointer-events: none !important;
+  border-radius: 6px !important;
+  transform: rotate(1.5deg) !important;
+}
+
 :global(.col-ghost) {
   opacity: 0.35;
   background: var(--zc-surface) !important;
