@@ -21,7 +21,7 @@
         </svg>
       </div>
 
-      <h1 class="login-title">zntt-control</h1>
+      <h1 class="login-title">znttaskie</h1>
       <p class="login-sub">Sign in to your account</p>
 
       <form class="login-form" @submit.prevent="handleLogin">

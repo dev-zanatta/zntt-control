@@ -17,7 +17,7 @@
           stroke-linejoin="round"
         />
       </svg>
-      <span class="app-tb-name">zntt-control</span>
+      <span class="app-tb-name">znttaskie</span>
     </div>
 
     <div class="app-tb-controls">

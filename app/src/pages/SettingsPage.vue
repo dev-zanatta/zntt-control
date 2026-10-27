@@ -185,7 +185,7 @@
                 <polyline points="4,5 20,5 4,19 20,19" stroke="url(#aboutZ)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <div>
-                <div class="about-logo-name">zntt-control</div>
+                <div class="about-logo-name">znttaskie</div>
                 <div class="about-logo-ver">v{{ appVersion || '…' }}</div>
               </div>
             </div>
